@@ -6,6 +6,11 @@ func main() {
 	b := 3
 	c := a * b
 	fmt.Println(c)
+		fmt.Println(c)
+		fmt.Println(c)
+		fmt.Println(c)
+		fmt.Println(c)
+		fmt.Println(c)
 }
 fmt.Println(c)
 }
