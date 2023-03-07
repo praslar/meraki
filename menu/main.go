@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -253,6 +254,7 @@ func main() {
 				}
 
 				if optionMenuWallet == 6 {
+					t := time.Now()
 					filteredWallet := []Wallet{}
 					for _, wallet := range listUsers[currentUserIndex].Wallets {
 						for _, token := range wallet.Tokens {
@@ -266,6 +268,11 @@ func main() {
 						Email:   listUsers[currentUserIndex].Email,
 						Wallets: filteredWallet,
 					}, priceTag)
+					fmt.Println("took: ", time.Now().Sub(t).String())
+				}
+
+				if optionMenuWallet == 7 {
+					fmt.Println("Tong so wallet hien tai: ", len(listUsers[currentUserIndex].Wallets))
 				}
 			}
 		case 3:
