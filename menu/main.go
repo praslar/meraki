@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/mail"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -50,12 +51,21 @@ func InMenuWallet() {
 	fmt.Println("1. Tạo thêm wallet")
 	fmt.Println("2. Sửa name wallet")
 	fmt.Println("3. Xóa wallet theo address")
+	fmt.Println("4. Sắp xếp wallet theo tứ tự giảm dần tổng số balance")
+	fmt.Println("5. Sắp xếp wallet theo tứ tự tăng dần tổng số balance")
+	fmt.Println("6. In ra màn hình các wallet có chứa token BTC > 10")
 	fmt.Println("0. Quay về màn hình login")
 	fmt.Println("============================================================")
 }
 
 func main() {
-	// TODO : listUsers = DocListTuFile()
+
+	// giá defaul của từng token theo USD
+	priceTag := map[string]float64{
+		"BTC": 22.16,
+		"ETH": 1.57,
+		"ADA": 0.000332910,
+	}
 
 	var listUsers []User
 
@@ -153,7 +163,7 @@ func main() {
 			fmt.Println("Làm gì làm tiếp đi")
 
 			fmt.Printf("Thong tin ví của %s là: ", currentEmail)
-			PrintThongTinUser(listUsers[currentUserIndex])
+			PrintThongTinUser(listUsers[currentUserIndex], priceTag)
 			for {
 				InMenuWallet()
 				optionMenuWallet := GetInputNumber()
@@ -172,7 +182,7 @@ func main() {
 					listUsers[currentUserIndex].Wallets = append(listUsers[currentUserIndex].Wallets, newWallet)
 					fmt.Print("\033[H\033[2J")
 					fmt.Println("bạn đã tạo ví mới thành công!")
-					PrintThongTinUser(listUsers[currentUserIndex])
+					PrintThongTinUser(listUsers[currentUserIndex], priceTag)
 				}
 				if optionMenuWallet == 2 {
 					// sửa name wallet
@@ -184,7 +194,7 @@ func main() {
 					listUsers[currentUserIndex].Email = newEmail
 					fmt.Print("\033[H\033[2J")
 					fmt.Println("bạn đã đổi email mới thành: ", newEmail)
-					PrintThongTinUser(listUsers[currentUserIndex])
+					PrintThongTinUser(listUsers[currentUserIndex], priceTag)
 				}
 				if optionMenuWallet == 3 {
 					// xóa wallet
@@ -205,7 +215,57 @@ func main() {
 
 					fmt.Print("\033[H\033[2J")
 					fmt.Println("bạn đã xóa wallet: ", deleteAddress)
-					PrintThongTinUser(listUsers[currentUserIndex])
+					PrintThongTinUser(listUsers[currentUserIndex], priceTag)
+				}
+				if optionMenuWallet == 4 {
+					sort.Slice(listUsers[currentUserIndex].Wallets, func(i, j int) bool {
+						totalBalanceI := 0.0
+						for _, token := range listUsers[currentUserIndex].Wallets[i].Tokens {
+							// quy doi ra usd
+							usdPrice := token.Balances * priceTag[token.Symbol]
+							totalBalanceI += usdPrice
+						}
+						totalBalanceJ := 0.0
+						for _, token := range listUsers[currentUserIndex].Wallets[j].Tokens {
+							usdPrice := token.Balances * priceTag[token.Symbol]
+							totalBalanceJ += usdPrice
+						}
+						return totalBalanceI > totalBalanceJ
+					})
+					PrintThongTinUser(listUsers[currentUserIndex], priceTag)
+				}
+				if optionMenuWallet == 5 {
+					sort.Slice(listUsers[currentUserIndex].Wallets, func(i, j int) bool {
+						totalBalanceI := 0.0
+						for _, token := range listUsers[currentUserIndex].Wallets[i].Tokens {
+							// quy doi ra usd
+							usdPrice := token.Balances * priceTag[token.Symbol]
+							totalBalanceI += usdPrice
+						}
+						totalBalanceJ := 0.0
+						for _, token := range listUsers[currentUserIndex].Wallets[j].Tokens {
+							usdPrice := token.Balances * priceTag[token.Symbol]
+							totalBalanceJ += usdPrice
+						}
+						return totalBalanceI < totalBalanceJ
+					})
+					PrintThongTinUser(listUsers[currentUserIndex], priceTag)
+				}
+
+				if optionMenuWallet == 6 {
+					filteredWallet := []Wallet{}
+					for _, wallet := range listUsers[currentUserIndex].Wallets {
+						for _, token := range wallet.Tokens {
+							if token.Symbol == "BTC" && token.Balances > 10 {
+								filteredWallet = append(filteredWallet, wallet)
+								break
+							}
+						}
+					}
+					PrintThongTinUser(User{
+						Email:   listUsers[currentUserIndex].Email,
+						Wallets: filteredWallet,
+					}, priceTag)
 				}
 			}
 		case 3:
@@ -313,23 +373,30 @@ func save(data []User) error {
 
 func PrintThongTin(listUser []User) {
 	for _, user := range listUser {
+		fmt.Println("==================================")
 		fmt.Println("Email: ", user.Email)
 		for _, wallet := range user.Wallets {
-			fmt.Println("Address: ", wallet.Address)
+			fmt.Println("--------------------------------")
+			fmt.Println("\tAddress: ", wallet.Address)
 			for _, token := range wallet.Tokens {
-				fmt.Println("Symbol: ", token.Symbol)
-				fmt.Println("Balance: ", token.Balances)
+				fmt.Println("\t\tSymbol: ", token.Symbol)
+				fmt.Println("\t\tBalance: ", token.Balances)
 			}
 		}
 	}
 }
-func PrintThongTinUser(user User) {
+
+func PrintThongTinUser(user User, priceTag map[string]float64) {
 	fmt.Println("Email: ", user.Email)
 	for _, wallet := range user.Wallets {
-		fmt.Println("Address: ", wallet.Address)
+		fmt.Println("--------------------------------")
+		fmt.Println("\tAddress: ", wallet.Address)
+		totalBalance := 0.0
 		for _, token := range wallet.Tokens {
-			fmt.Println("Symbol: ", token.Symbol)
-			fmt.Println("Balance: ", token.Balances)
+			totalBalance += token.Balances * priceTag[token.Symbol]
+			fmt.Println("\t\tSymbol: ", token.Symbol)
+			fmt.Println("\t\tBalance: ", token.Balances)
 		}
+		fmt.Println("\tTong Balance: ", totalBalance)
 	}
 }
