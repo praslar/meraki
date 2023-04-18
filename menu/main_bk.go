@@ -163,6 +163,11 @@ func main() {
 
 			fmt.Println("Làm gì làm tiếp đi")
 
+			// Role hien tai cua user la gi?
+			// query trong bảng user_has_role
+			// -> pxthang97@gmail (admin+membership)
+			// -> vu (membershi
+
 			fmt.Printf("Thong tin ví của %s là: ", currentEmail)
 			PrintThongTinUser(listUsers[currentUserIndex], priceTag)
 			for {

@@ -23,7 +23,6 @@ type Wallet struct {
 type Token struct {
 	Address string `json:"address"`
 	Symbol  string `json:"symbol"`
-	Icon    string `json:"icon"`
 }
 
 type Transaction struct {
