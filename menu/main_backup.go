@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"meraki/pkg/utils"
 	"net/mail"
 	"os"
 	"sort"
@@ -79,15 +80,20 @@ func main() {
 	listUsers = data
 
 	for {
-		InMenuChinh()
+
+		// Lấy request của user
+		utils.InMenuChinh()
 		fmt.Print("Nhap chuc nang can thuc hien: ")
 		option := NhapOption()
+
+		// xử lý logic
 		switch option {
 		case 0:
 			// clear console
 			fmt.Print("\033[H\033[2J")
 			fmt.Println("List user hiện tại: ")
 			PrintThongTin(listUsers)
+
 		case 1: // Đăng ký email
 			fmt.Print("Mời bạn nhập email: ")
 			newEmail := GetInputString()
@@ -283,6 +289,8 @@ func main() {
 		case 3:
 			fmt.Println(" Saving....")
 			fmt.Println("Please do not close the app during saving...")
+
+			// lưu vào database/file
 			err := save(listUsers)
 			if err != nil {
 				fmt.Println(" ERROR: cannot save data: ", err)
